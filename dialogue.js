@@ -1,3 +1,4 @@
+
 //global var
 order = { source: { value: '', status: 0 }, destination: { value: '', status: 0 }, numOfPeople: { value: 1, status: 0 } };
 msgMaxWidth = window.innerWidth - 100;
@@ -49,9 +50,9 @@ function googleMapPlugin(field) {
 //scripts of AI
 scripts =
     {
-    destination: ["Where are you want to go?",
+    destination: ["Where do you want to go?",
                   "Your destination is {location}, right?",
-                   "We cannot locate your destination, please say it again."],
+                   "We cannot locate your destination or it isn't in service area, please try again."],
     source: ["Where are you now?","Your location is {location}, right?","Excuse me, where are you now?"],
     numOfPeople:['How many passengers?'],
 };
@@ -84,11 +85,24 @@ function locationStatus(field,addr){
     if (addr[0] == 0) {
         order[field].status = 1;
         order[field].value = addr[1];
+
         return scripts[field][order[field].status].replace("{location}", order[field].value) + '|<iframe width="100%" height="300" frameborder="0" style="border:0;" src="https://www.google.com/maps/embed/v1/search?q=' + String(addr[1]).replace(' ', '+') + ',+Los+Angeles,+CA,+United+States&key=AIzaSyAOwwmWHbANks4G77DpHp3h_5Ag0dxds-Y" allowfullscreen></iframe>';
+
     } else {
         order[field].status = 0;
         return scripts[field][2];
     }
+}
+function checkData() {
+    if (order.destination.status == 3 && order.source.status == 3 && order.numOfPeople.status == 3) {
+        return true;
+    } else {
+        return false;
+    }
+}
+function reservation() {
+    return "Here is your reservation.\n Pick up at " + order.source.value + ".\nDrop off at " + order.destination.value + ".\n Number of passengers is " + order.numOfPeople.value + '.\n Please confirm.|' +
+                            '<iframe width="100%" height="300" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/directions?origin=' + String(order.source.value).replace(' ', '+') + ',+Los+Angeles,+CA,+United+States&destination=' + String(order.destination.value).replace(' ', '+') + ',+Los+Angeles,+CA,+United+States&key=AIzaSyAOwwmWHbANks4G77DpHp3h_5Ag0dxds-Y" allowfullscreen></iframe>';
 }
 function dirtyWords(words) {
     if (words.match(new RegExp('\\*|hell|damn', 'i')))
@@ -111,11 +125,14 @@ function dialogueManage(order, words) {
             case 1:
                 if (isConfirm(words)) {
                     order.destination.status = 3;
+                    if (checkData()) {
+                        return reservation();
+                    }
                     if (order.source.status == 0)
                         return scripts.source[0];
                     else {
                         var addr = [0, order.source.value];
-                        return locationStatus('source', addr);
+                        return "Do you want us pick up you at current location? "+locationStatus('source', addr);
                     }
                         
                 } else {
@@ -135,6 +152,9 @@ function dialogueManage(order, words) {
                 if (isConfirm(words)) {
                     if (order.source.value != order.destination.value) {
                         order.source.status = 3;
+                        if (checkData()) {
+                            return reservation();
+                        }
                         return scripts.numOfPeople[0];
                     } else {
                         return "Can you walk to there?";
@@ -157,8 +177,8 @@ function dialogueManage(order, words) {
             case 1:
                 if (isConfirm(words)) {
                     order.numOfPeople.status = 3;
-                    return "Here is your reservation.\n Pick up at " + order.source.value + ".\nDrop off at " + order.destination.value + ".\n Number of passengers is " + order.numOfPeople.value + '.\n Please confirm.|'+
-                        '<iframe width="100%" height="300" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/directions?origin=' + String(order.source.value).replace(' ', '+') + ',+Los+Angeles,+CA,+United+States&destination=' + String(order.destination.value).replace(' ', '+') + ',+Los+Angeles,+CA,+United+States&key=AIzaSyAOwwmWHbANks4G77DpHp3h_5Ag0dxds-Y" allowfullscreen></iframe>';
+                        return reservation();
+                    
                 } else {
                     var num = getPeople(words);
                     order.numOfPeople.value = num;
@@ -174,8 +194,8 @@ function dialogueManage(order, words) {
             var field = whichField(words);
             switch (field) {
                 case 'destination':
-                    var addr = [0, order.source.value];
-                    return locationStatus('source', addr);
+                    var addr = getAddr(words);
+                    return locationStatus('destination', addr);
                     break;
                 case 'source':
                     var addr = getAddr(words);
@@ -194,11 +214,11 @@ function dialogueManage(order, words) {
     }
 }
 function whichField(words) {
-    if (words.match(new RegExp('want to go|destination', 'i')))
+    if (words.match(new RegExp('(want to go|destination)', 'i')))
         return 'destination';
-    if (words.match(new RegExp('in(/s/S)*now|location|origin', 'i')))
+    if (words.match(new RegExp('(\\sin\\s|location|origin)', 'i')))
         return 'source';
-    if (words.match(new RegExp('people|men|man|woman|women|guys', 'i')))
+    if (words.match(new RegExp('(people|men|man|woman|women|guys)', 'i')))
         return 'numOfPeople';
     return 'none';
 }

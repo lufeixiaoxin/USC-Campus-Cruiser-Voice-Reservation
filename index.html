@@ -1,4 +1,3 @@
-﻿
 <!DOCTYPE html>
 <html class="no-js consumer" lang="en">
 <head>
@@ -17,7 +16,7 @@
     <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
     <style>
         .direct-chat-text {
-            max-width:100%
+            max-width:90%
              }
         .direct-chat-timestamp {
             color:black
@@ -40,7 +39,7 @@
             <!-- Contacts are loaded here -->
            
         </div><!-- /.box-body -->
-        <div class="box-footer" id="inputBox" style="bottom:0px;position:absolute;background:white;">
+        <div class="box-footer" id="inputBox" style="bottom:0px;position:fixed;background:white;">
             <form action="#" method="post">
                 <div class="input-group">
                     <span class="input-group-btn">
@@ -62,20 +61,18 @@
         
         $(document).ready(function () {
             $('#box').height(window.innerHeight);
-            $('.box-body').height(window.innerHeight - 100);
+            $('.box-body').height(window.innerHeight-55);
             ask("Hello trojans! " + scripts.destination[0]);
             $('#voiceBtn').click(function (e) {
                 $('#answerTxt').val('');
                 recognition.start();
             });
             $('#sendBtn').click(function (e) {
-
                 var str = $('#answerTxt').val();
                 if (str != '') {
                     $('#answerTxt').val('');
                     answer(str);
                 }
-
             });
           //  $('body').remove($('div:last'));
         });
