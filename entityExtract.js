@@ -1,4 +1,3 @@
-
 var maxEditDistance = 0.5;  //maximun normalized editDistance we accept 
 var maxEditDistance_abbr = 0.8;
 

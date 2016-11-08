@@ -1,4 +1,3 @@
-
 //global var
 order = { source: { value: '', status: 0 }, destination: { value: '', status: 0 }, numOfPeople: { value: 1, status: 0 } };
 msgMaxWidth = window.innerWidth - 100;
